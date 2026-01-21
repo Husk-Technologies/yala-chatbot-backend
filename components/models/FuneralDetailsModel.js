@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const FuneralDetailsSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Types.ObjectId,
+    required: true
+  },
   description: {
     type: String,
     required: true,

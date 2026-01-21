@@ -3,11 +3,16 @@ const cors = require("cors");
 const { dbConfig } = require("./components/databaseConfig/dbConfig");
 const app = express();
 require("dotenv").config();
+const UserRoute = require("./components/routers/UserRoute");
+
 const PORT = process.env.PORT;
 dbConfig(); // database configuration
 
+
 app.use(express.json());
 app.use(cors({ origin: "*" }));
+
+app.use("/api", UserRoute);
 
 
 app.listen(PORT, () => {

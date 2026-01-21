@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
+    identity: {
+        type: String,
+    },
     firstName: {
       type: String,
       required: true,
@@ -12,7 +15,6 @@ const UserSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
     },
     phoneNumber: {
       type: String,
@@ -23,7 +25,7 @@ const UserSchema = new mongoose.Schema(
         required: true
     },
     funeralUniqueCode: {
-        type: String, // organisers funeral code
+        type: [String], // organizers funeral codes
     },
     role: {
       type: String,
@@ -37,4 +39,4 @@ const UserSchema = new mongoose.Schema(
   },
 );
 
-exports.module = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", UserSchema);
