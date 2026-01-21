@@ -14,6 +14,12 @@ app.use(cors({ origin: "*" }));
 
 app.use("/api", UserRoute);
 
+app.get("/", (req, res) => {
+    res.json({
+        message: "Yala server running perfectly 😊😊😊😊."
+    })
+})
+
 
 app.listen(PORT, () => {
     console.log(`Server listening on http://localhost:${PORT}`);

@@ -145,6 +145,51 @@ exports.registerOrganiser = async (req, res) => {
   }
 };
 
+// Add funeral code to organizer
+exports.addFuneralCode = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { funeralUniqueCode } = req.body;
+
+        if(!funeralUniqueCode){
+            return res.status(404).json({
+                success: false,
+                message: "Filed is required."
+            })
+        }
+        const user = await User.findById(id);
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            })
+        }
+
+        if(user.funeralUniqueCode.includes(funeralUniqueCode)){
+            return res.status(404).json({
+              success: false,
+              message: "Code already added.",
+            });
+        }
+
+        const updateFuneralCode = await User.findByIdAndUpdate(id, {
+          funeralUniqueCode: { $push: funeralUniqueCode },
+        }, { new: true });
+
+        res.status(200).json({
+          success: true,
+          message: "Added successfully",
+          funeralUniqueCode: updateFuneralCode.funeralUniqueCode
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: `Internal server error: ${error.message}`,
+        });
+    }
+};
+
 // Admin / Organizer login
 exports.login = async (req, res) => {
   try {
@@ -179,4 +224,47 @@ exports.login = async (req, res) => {
       message: `Internal server error: ${error.message}`,
     });
   }
+};
+
+// Get all users data
+exports.getUserData = async (req, res) => {
+    try {
+      const user = await User.find();
+
+      res.status(200).json({
+        success: true,
+        message: "Added successfully",
+        user: user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: `Internal server error: ${error.message}`,
+      });
+    }
+};
+
+// Get user data
+exports.getUserData = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Added successfully",
+        user: user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: `Internal server error: ${error.message}`,
+      });
+    }
 };
