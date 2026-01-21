@@ -173,8 +173,9 @@ exports.addFuneralCode = async (req, res) => {
         }
 
         const updateFuneralCode = await User.findByIdAndUpdate(id, {
-          funeralUniqueCode: { $push: funeralUniqueCode },
-        }, { new: true });
+          $push: { funeralUniqueCode: funeralUniqueCode },
+        }, 
+        { new: true });
 
         res.status(200).json({
           success: true,
