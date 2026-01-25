@@ -1,13 +1,14 @@
 const mongoose = require("mongoose");
 
-const GuestSchema = new mongoose.Schema(
+const CondolenceSchema = new mongoose.Schema(
   {
     funeralUniqueCode: {
       type: String,
       required: true,
     },
-    fullName: {
-      type: String,
+    guestId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Guest",
       required: true,
     },
     message: {
@@ -20,4 +21,4 @@ const GuestSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("Guest", GuestSchema);
+module.exports = mongoose.model("Condolence", CondolenceSchema);

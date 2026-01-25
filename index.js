@@ -6,6 +6,7 @@ require("dotenv").config();
 const UserRoute = require("./components/routers/UserRoute");
 const GuestRoute = require("./components/routers/GuestRoute");
 const FuneralDetailsRoute = require("./components/routers/FuneralDetailsRoute");
+const CondolenceRoute = require("./components/routers/CondolenceRoute");
 
 const PORT = process.env.PORT;
 dbConfig(); // database configuration
@@ -17,6 +18,7 @@ app.use(cors({ origin: "*" }));
 app.use("/api", UserRoute);
 app.use("/api", GuestRoute);
 app.use("/api", FuneralDetailsRoute);
+app.use("/api", CondolenceRoute);
 
 app.get("/", (req, res) => {
     res.json({

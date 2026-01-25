@@ -176,7 +176,7 @@ exports.getFuneralDetailsByUniqueCode = async (req, res) => {
 exports.verifyFuneralDetails = async (req, res) => {
     try {
         const { uniqueCode } = req.params;
-        const guestId = req.user.id;
+        const guestId = req.user.id; // Get guest ID from the verified token
         const funeralDetails = await FuneralDetails.findOne({
             uniqueCode
         });
