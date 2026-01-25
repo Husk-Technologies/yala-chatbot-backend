@@ -1,5 +1,5 @@
 const Guest = require("../models/GuestModel");  
-const { generateToken } = require("../middleware/Authenticate");
+const { generateGuestToken } = require("../middleware/Authenticate");
 
 // Check guest registration
 exports.checkGuestRegistration = async (req, res) => {
@@ -14,20 +14,20 @@ exports.checkGuestRegistration = async (req, res) => {
     };
     
     // Check if guest with the same phone number already exists
-    const existingGuest = await Guest.findOne({
+    const guest = await Guest.findOne({
       phoneNumber: phoneNumber,
     });
-    if (!existingGuest) {
+    if (!guest) {
       return res.status(404).json({
         success: false,
         message: "Guest not found.",
       });
     };
-    const token = generateToken({ user: existingGuest._id })
+    const token = generateGuestToken(guest);
     res.status(200).json({
       success: true,
       message: "Guest fetched successfully.",
-      guest: existingGuest,
+      guest: guest,
       token: token,
     });
   } catch (error) {
@@ -61,18 +61,18 @@ exports.registerGuest = async (req, res) => {
         message: "Guest with this phone number already exists.",
       });
     }
-    const newGuest = new Guest({
+    const guest = new Guest({
       fullName,
       phoneNumber,
     });
-    await newGuest.save();
+    await guest.save();
 
-    const token = generateToken({ user: newGuest._id })
+    const token = generateGuestToken(guest);
 
     res.status(201).json({
       success: true,
       message: "Guest registered successfully",
-      guest: newGuest,
+      guest: guest,
       token: token,
     });
   } catch (error) {

@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const secretKey = process.env.ACCESS_TOKEN;
 const refreshSecretKey = process.env.REFRESH_TOKEN;
 
-// Generate new token
+// Generate new token for users
 exports.generateToken = async (user) => {
     try {
         const payload = {
@@ -12,6 +12,23 @@ exports.generateToken = async (user) => {
             email: user.email,
             phoneNumber: user.phoneNumber,
             role: user.role
+        };
+        const token = jwt.sign(payload, secretKey, { expiresIn: "1d" });
+
+        return token;
+        
+    } catch (error) {
+        console.error(`Error generating token: ${error.message}`);
+    }
+}; 
+
+// Generate guest token
+exports.generateGuestToken = async (guest) => {
+    try {
+        const payload = {
+            id: guest._id,
+            fullName: guest.fullName,
+            phoneNumber: guest.phoneNumber,
         };
         const token = jwt.sign(payload, secretKey, { expiresIn: "1d" });
 
