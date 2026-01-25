@@ -10,10 +10,14 @@ const GuestSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    funeralUniqueCode: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,
   },
 );
 
-exports.module = mongoose.model("Guest", GuestSchema);
+module.exports = mongoose.model("Guest", GuestSchema);

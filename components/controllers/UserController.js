@@ -228,7 +228,7 @@ exports.login = async (req, res) => {
 };
 
 // Get all users data
-exports.getUserData = async (req, res) => {
+exports.getAllUserData = async (req, res) => {
     try {
       const user = await User.find();
 
@@ -249,7 +249,7 @@ exports.getUserData = async (req, res) => {
 exports.getUserData = async (req, res) => {
     try {
       const { id } = req.params;
-      const user = await User.findById(id);
+      const user = await User.findById(id).select("-password -_v");
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -267,5 +267,22 @@ exports.getUserData = async (req, res) => {
         success: false,
         message: `Internal server error: ${error.message}`,
       });
+    }
+};
+
+// Gett all identity 
+exports.getAllIdentity = async (req, res) => {
+    try {
+      const identity = await Identity.find();
+        res.status(200).json({
+            success: true,
+            message: "Identity fetched successfully",
+            identity: identity
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: `Internal server error: ${error.message}`,
+        });
     }
 };

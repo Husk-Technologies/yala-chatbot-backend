@@ -13,8 +13,7 @@ exports.generateToken = async (user) => {
             phoneNumber: user.phoneNumber,
             role: user.role
         };
-
-        const token = await jwt.sign(payload, secretKey, { expiresIn: "1d" });
+        const token = jwt.sign(payload, secretKey, { expiresIn: "1d" });
 
         return token;
         
