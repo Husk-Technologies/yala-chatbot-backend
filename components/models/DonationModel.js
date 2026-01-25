@@ -5,12 +5,10 @@ const DonationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  fullName: {
-    type: String,
+  guestId: {
+    type: mongoose.Types.ObjectId,
+    ref: "Guest",
     required: true,
-  },
-  phoneNumber: {
-    type: String,
   },
   donationAmount: {
     type: Boolean,

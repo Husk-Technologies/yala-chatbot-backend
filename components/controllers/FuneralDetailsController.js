@@ -2,11 +2,10 @@ const cloudinary = require("../middleware/cloudinary");
 const FuneralDetails = require("../models/FuneralDetailsModel");
 const Guest = require("../models/GuestModel");
 
-// Upload funeral details controller
+// upload funeral details controller
 exports.uploadFuneralDetails = async (req, res) => {
   try {
-    const { userId, description, uniqueCode, location, condolence, donation, date } =
-      req.body;
+    const { userId, description, uniqueCode, location, condolence, donation, date } = req.body;
     const brochureFile = req.file; // Access the uploaded file
     if (!brochureFile) {
       return res.status(400).json({ message: "Brochure file is required." });

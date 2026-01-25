@@ -20,7 +20,10 @@ const FuneralDetailsSchema = new mongoose.Schema(
       required: true,
     },
     location: {
-      type: String,
+      day: String,
+      time: Date,
+      name: String,
+      link: String,
     },
     condolence: {
       type: Boolean,
