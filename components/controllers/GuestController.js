@@ -102,3 +102,25 @@ exports.getAllGuests = async (req, res) => {
     });
   }
 };
+
+// Get guest by funeral unique code (organizer/admin)
+exports.getGuestsByFuneralUniqueCode = async (req, res) => {
+  try {
+    const { uniqueCode } = req.params;
+    const guests = await Guest.find({
+      funeralUniqueCode: uniqueCode,
+    });
+    res.status(200).json({
+      success: true,
+      message: "Guests fetched successfully",
+      guests: guests,
+    });
+  }
+  catch (error) {
+    console.log(`Internal server error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: `Internal server error: ${error.message}`,
+    });
+  }
+};

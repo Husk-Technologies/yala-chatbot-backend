@@ -194,14 +194,20 @@ exports.verifyFuneralDetails = async (req, res) => {
                 message: "Guest not found"
             });
         }
-        // Update guest's funeralUniqueCode array
-        console.log(`ID: ${guestId}, Code: ${uniqueCode}`);
-        
+        // Check if guest has already verified for this funeral
+        if(guest.funeralUniqueCode.includes(uniqueCode)) {
+            return res.status(404).json({
+              success: false,
+              message: "Already verified for this funeral",
+              uniqueCode: funeralDetails.uniqueCode,
+            });
+        }
         const updateGuestFuneralUniqueCode = await Guest.findByIdAndUpdate(
           guestId,
           { $push: { funeralUniqueCode: uniqueCode } },
           { new: true },
         );
+
 
         res.status(200).json({
           success: true,
