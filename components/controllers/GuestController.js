@@ -23,7 +23,8 @@ exports.checkGuestRegistration = async (req, res) => {
         message: "Guest not found.",
       });
     };
-    const token = generateGuestToken(guest);
+    const token = await generateGuestToken(guest);
+    
     res.status(200).json({
       success: true,
       message: "Guest fetched successfully.",
@@ -67,7 +68,7 @@ exports.registerGuest = async (req, res) => {
     });
     await guest.save();
 
-    const token = generateGuestToken(guest);
+    const token = await generateGuestToken(guest);
 
     res.status(201).json({
       success: true,

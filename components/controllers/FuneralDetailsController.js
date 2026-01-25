@@ -1,0 +1,282 @@
+const cloudinary = require("../middleware/cloudinary");
+const FuneralDetails = require("../models/FuneralDetailsModel");
+const Guest = require("../models/GuestModel");
+
+// Upload funeral details controller
+exports.uploadFuneralDetails = async (req, res) => {
+  try {
+    const { userId, description, uniqueCode, location, condolence, donation, date } =
+      req.body;
+    const brochureFile = req.file; // Access the uploaded file
+    if (!brochureFile) {
+      return res.status(400).json({ message: "Brochure file is required." });
+    }
+
+    const existingFuneral = await FuneralDetails.findOne({ uniqueCode });
+    if (existingFuneral) {
+      return res
+        .status(400)
+        .json({
+          message: "Funeral details with this unique code already exist.",
+        });
+    }
+
+    // Upload brochure to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(brochureFile.path, {
+      folder: "yala_funeral_files",
+      resource_type: "auto",
+    });
+
+    // Create new funeral details document
+    const newFuneralDetails = new FuneralDetails({
+        userId,
+        description,
+        uniqueCode,
+        brochure: uploadResult.secure_url,
+        location,
+        condolence,
+        donation,
+        date,
+    });
+    await newFuneralDetails.save();
+
+    res.status(201).json({
+      message: "Funeral details uploaded successfully",
+      funeralDetails: newFuneralDetails,
+    });
+  } catch (error) {
+    console.error("Error uploading funeral details:", error);
+    res
+      .status(500)
+      .json({ message: `Error uploading funeral details: ${error.message}` });
+  }
+};
+
+// update funeral details controller can be added here
+exports.updateFuneralDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, description, uniqueCode, location, condolence, donation, date } =
+      req.body;
+    const brochureFile = req.file; // Access the uploaded file
+    if (!brochureFile) {
+      return res.status(400).json({ message: "Brochure file is required." });
+    }
+
+    const existingFuneral = await FuneralDetails.findById(id);
+    if (!existingFuneral) {
+      return res.status(400).json({
+        message: "Funeral details not found.",
+      });
+    }
+
+    // Upload brochure to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(brochureFile.path, {
+      folder: "yala_funeral_files",
+      resource_type: "auto",
+    });
+    console.log(`Data: ${JSON.stringify(uploadResult, null, 2)}`);
+
+    // Create new funeral details document
+    const updateFuneralDetails = await FuneralDetails.findByIdAndUpdate(
+      id,
+      {
+        userId,
+        description,
+        uniqueCode,
+        brochure: uploadResult.secure_url,
+        location,
+        condolence,
+        donation,
+        date,
+      },
+      { new: true },
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Funeral details updated successfully",
+      funeralDetails: updateFuneralDetails,
+    });
+  } catch (error) {
+    console.error("Error uploading funeral details:", error);
+    res
+      .status(500)
+      .json({ message: `Error uploading funeral details: ${error.message}` });
+  }
+};
+
+// delete funeral details controller can be added here
+exports.deleteFuneralDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existingFuneral = await FuneralDetails.findById(id);
+    if (!existingFuneral) {
+        return res.status(400).json({
+        message: "Funeral details not found.",
+      });
+    }   
+    await FuneralDetails.findByIdAndDelete(id);
+    res.status(200).json({
+      success: true,
+      message: "Funeral details deleted successfully",
+    });
+  }
+    catch (error) {
+    console.error("Error deleting funeral details:", error);
+    res
+      .status(500)
+      .json({ message: `Error deleting funeral details: ${error.message}` });
+  }
+};
+
+// get funeral details controller can be added here
+exports.getAllFuneralDetails = async (req, res) => {
+    try {
+        const funeralDetails = await FuneralDetails.find().sort({ createdAt: -1 }).populate("userId", " firstName lastName");
+        res.status(200).json({
+            success: true,
+            funeralDetails
+        });
+    } catch (error) {
+        console.error("Error fetching funeral details:", error);
+        res
+          .status(500)
+            .json({ message: `Error fetching funeral details: ${error.message}` });
+    }       
+};
+
+// get funeral details by unique code controller can be added here
+exports.getFuneralDetailsByUniqueCode = async (req, res) => {
+    try {
+        const { uniqueCode } = req.params;
+        const funeralDetails = await FuneralDetails.findOne({
+            uniqueCode
+        });
+        if(!funeralDetails) {   
+            return res.status(404).json({
+                success: false,
+                message: "Funeral details not found"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Funeral details fetched successfully",
+            funeralDetails
+        });
+    } catch (error) {
+        console.error("Error fetching funeral details:", error);
+        res
+          .status(500)
+            .json({ message: `Error fetching funeral details: ${error.message}` });
+    }
+};
+
+// verify funeral details with unique code controller can be added here
+exports.verifyFuneralDetails = async (req, res) => {
+    try {
+        const { uniqueCode } = req.params;
+        const guestId = req.user.id;
+        const funeralDetails = await FuneralDetails.findOne({
+            uniqueCode
+        });
+        if(!funeralDetails) {
+            return res.status(404).json({
+                success: false,
+                message: "Funeral details not found"
+            });
+        }
+        // Check if guest exists
+        const guest = await Guest.findById(guestId);
+        if(!guest) {
+            return res.status(404).json({
+                success: false,
+                message: "Guest not found"
+            });
+        }
+        // Update guest's funeralUniqueCode array
+        console.log(`ID: ${guestId}, Code: ${uniqueCode}`);
+        
+        const updateGuestFuneralUniqueCode = await Guest.findByIdAndUpdate(
+          guestId,
+          { $push: { funeralUniqueCode: uniqueCode } },
+          { new: true },
+        );
+
+        res.status(200).json({
+          success: true,
+          message: "Funeral details verified successfully",
+          uniqueCode: funeralDetails.uniqueCode,
+          guest: updateGuestFuneralUniqueCode.funeralUniqueCode,
+        });
+    } catch (error) {
+        console.error("Error verifying funeral details:", error);
+        res
+          .status(500)
+            .json({ message: `Error verifying funeral details: ${error.message}` });
+    }
+};
+
+// get funeral brochure 
+exports.getFuneralBrochure = async (req, res) => {
+    try {
+        const { uniqueCode } = req.params;
+        const funeralDetails = await FuneralDetails.findOne({
+            uniqueCode
+        });
+        if(!funeralDetails) {
+            return res.status(404).json({
+                success: false,
+                message: "Funeral details not found"
+            });
+        }
+        // Increment brochure download count
+        funeralDetails.brochureDownloadCount += 1;
+        await funeralDetails.save();
+        res.status(200).json({
+            success: true,
+            message: "Funeral brochure fetched successfully",
+            brochureUrl: funeralDetails.brochure,
+            brochureDownloadCount: funeralDetails.brochureDownloadCount
+        });
+    } catch (error) {
+        console.error("Error fetching funeral brochure:", error);
+        res
+          .status(500)
+            .json({ message: `Error fetching funeral brochure: ${error.message}` });
+    }   
+};
+
+// get funeral brochure 
+exports.getFuneralLocation = async (req, res) => {
+    try {
+        const { uniqueCode } = req.params;
+        const funeralDetails = await FuneralDetails.findOne({
+            uniqueCode
+        });
+        if(!funeralDetails) {
+            return res.status(404).json({
+                success: false,
+                message: "Funeral details not found"
+            });
+        };
+        if(!funeralDetails.location) {
+            return res.status(404).json({
+                success: false,
+                message: "Funeral location not available"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Funeral location fetched successfully",
+            brochureUrl: funeralDetails.location,
+        });
+
+    } catch (error) {
+        console.error("Error fetching funeral brochure:", error);
+        res
+          .status(500)
+            .json({ message: `Error fetching funeral brochure: ${error.message}` });
+    }   
+};
