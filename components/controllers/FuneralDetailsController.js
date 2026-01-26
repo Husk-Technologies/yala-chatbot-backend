@@ -252,7 +252,7 @@ exports.getFuneralBrochure = async (req, res) => {
     }   
 };
 
-// get funeral brochure 
+// get funeral location 
 exports.getFuneralLocation = async (req, res) => {
     try {
         const { uniqueCode } = req.params;
@@ -275,7 +275,7 @@ exports.getFuneralLocation = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Funeral location fetched successfully",
-            brochureUrl: funeralDetails.location,
+            location: funeralDetails.location,
         });
 
     } catch (error) {
