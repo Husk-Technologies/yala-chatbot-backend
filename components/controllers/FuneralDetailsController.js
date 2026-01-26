@@ -74,7 +74,6 @@ exports.updateFuneralDetails = async (req, res) => {
       folder: "yala_funeral_files",
       resource_type: "auto",
     });
-    console.log(`Data: ${JSON.stringify(uploadResult, null, 2)}`);
 
     // Create new funeral details document
     const updateFuneralDetails = await FuneralDetails.findByIdAndUpdate(
