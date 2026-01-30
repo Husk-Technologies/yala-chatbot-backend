@@ -104,7 +104,7 @@ exports.updateFuneralDetails = async (req, res) => {
   }
 };
 
-// delete funeral details controller can be added here
+// delete funeral details 
 exports.deleteFuneralDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -128,7 +128,7 @@ exports.deleteFuneralDetails = async (req, res) => {
   }
 };
 
-// get funeral details controller can be added here
+// get funeral details 
 exports.getAllFuneralDetails = async (req, res) => {
     try {
         const funeralDetails = await FuneralDetails.find().sort({ createdAt: -1 }).populate("userId", " firstName lastName");
@@ -144,7 +144,7 @@ exports.getAllFuneralDetails = async (req, res) => {
     }       
 };
 
-// get funeral details by unique code controller can be added here
+// get funeral details by unique code 
 exports.getFuneralDetailsByUniqueCode = async (req, res) => {
     try {
         const { uniqueCode } = req.params;
@@ -170,7 +170,7 @@ exports.getFuneralDetailsByUniqueCode = async (req, res) => {
     }
 };
 
-// verify funeral details with unique code controller can be added here
+// verify funeral details with unique code 
 exports.verifyFuneralDetails = async (req, res) => {
     try {
         const { uniqueCode } = req.params;
@@ -197,6 +197,7 @@ exports.verifyFuneralDetails = async (req, res) => {
             return res.status(404).json({
               success: false,
               message: "Already verified for this funeral",
+              description: funeralDetails.description,
               uniqueCode: funeralDetails.uniqueCode,
             });
         }
@@ -210,6 +211,7 @@ exports.verifyFuneralDetails = async (req, res) => {
         res.status(200).json({
           success: true,
           message: "Funeral details verified successfully",
+          description: funeralDetails.description,
           uniqueCode: funeralDetails.uniqueCode,
           guest: updateGuestFuneralUniqueCode.funeralUniqueCode,
         });
@@ -275,6 +277,7 @@ exports.getFuneralLocation = async (req, res) => {
             success: true,
             message: "Funeral location fetched successfully",
             location: funeralDetails.location,
+            date: funeralDetails.date
         });
 
     } catch (error) {

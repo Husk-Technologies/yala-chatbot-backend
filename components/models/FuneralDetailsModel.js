@@ -17,7 +17,6 @@ const FuneralDetailsSchema = new mongoose.Schema(
     },
     brochure: {
       type: String,
-      required: true,
     },
     location: {
       day: String,
