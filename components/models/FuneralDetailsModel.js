@@ -7,13 +7,12 @@ const FuneralDetailsSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    description: {
-      type: String,
-      required: true,
-    },
     uniqueCode: {
       type: String,
       required: true,
+    },
+    description: {
+      type: String,
     },
     brochure: {
       type: String,

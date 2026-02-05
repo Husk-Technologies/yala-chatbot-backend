@@ -7,18 +7,26 @@ const UserRoute = require("./components/routers/UserRoute");
 const GuestRoute = require("./components/routers/GuestRoute");
 const FuneralDetailsRoute = require("./components/routers/FuneralDetailsRoute");
 const CondolenceRoute = require("./components/routers/CondolenceRoute");
+const DonationRoute = require("./components/routers/DonationRoute");
+const PaystackWebhookRoute = require("./components/routers/paystackWebhookRoute");
 
 const PORT = process.env.PORT;
 dbConfig(); // database configuration
 
 
-app.use(express.json());
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(cors({ origin: "*" }));
 
 app.use("/api", UserRoute);
 app.use("/api", GuestRoute);
 app.use("/api", FuneralDetailsRoute);
 app.use("/api", CondolenceRoute);
+app.use("/api", DonationRoute);
+app.use("/api", PaystackWebhookRoute);
 
 app.get("/", (req, res) => {
     res.json({
