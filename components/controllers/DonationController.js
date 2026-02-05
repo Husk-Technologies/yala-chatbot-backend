@@ -23,13 +23,13 @@ exports.makeDonation = async (req, res) => {
             });
         }
         // Initialize transaction with Paystack
-        const response = await api.post("transaction/initialize", { 
-            email: "husktechgh@gmail.com",
-            amount: donationAmount * 100, // Paystack expects amount in kobo/old pesewas
-            metadata: {
-                funeralUniqueCode,
-                guestId
-            }
+        const response = await api.post("transaction/initialize", {
+          email: "huskpaystackreceipt@gmail.com",
+          amount: donationAmount * 100, // Paystack expects amount in kobo/old pesewas
+          metadata: {
+            funeralUniqueCode,
+            guestId,
+          },
         });
 
         // respond with authorization URL and reference
