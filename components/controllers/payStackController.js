@@ -36,17 +36,18 @@ exports.payStackWebhook = async (req, res) => {
 
 
         if (event.event.startsWith('charge.')) {
-
-            const donation = new Donation({
-                funeralUniqueCode: funeralDetails.uniqueCode,
-                guestId: guest._id,
-                transactionReference: data.reference,
-                transactionStatus: data.status,
-                transactionChannel: data.channel,
-                donationAmount: data.amount / 100, // Paystack sends amount in old pesewas, convert to Cedis
-            });
-            await donation.save();
-            console.log(`Data: ${JSON.stringify(event, null, 2)}`);
+            if(event.event === "charge.success"){
+                const donation = new Donation({
+                    funeralUniqueCode: funeralDetails.uniqueCode,
+                    guestId: guest._id,
+                    transactionReference: data.reference,
+                    transactionStatus: data.status,
+                    transactionChannel: data.channel,
+                    donationAmount: data.amount / 100, // Paystack sends amount in old pesewas, convert to Cedis
+                });
+                await donation.save();
+                console.log(`Data: ${JSON.stringify(event, null, 2)}`);
+            }
         };
 
     } catch (error) {
