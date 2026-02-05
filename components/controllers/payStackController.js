@@ -51,7 +51,8 @@ exports.payStackWebhook = async (req, res) => {
         };
 
         res.status(200).json({
-            success: true
+            success: true,
+            message: "OK"
         })
 
     } catch (error) {
