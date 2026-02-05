@@ -8,7 +8,7 @@ const secret = process.env.PAYSTACK_SECRET_KEY;
 exports.payStackWebhook = async (req, res) => {
     try {
         const hash = crypto.createHmac('sha512', secret).update(JSON.stringify(req.rawBody)).digest('hex');
-        if (hash == req.headers['x-paystack-signature']) return res.status(400).send('Invalid signature');
+        if (hash !== req.headers['x-paystack-signature']) return res.status(400).send('Invalid signature');
     
         const event = req.body;
         //Destructure event
@@ -49,6 +49,10 @@ exports.payStackWebhook = async (req, res) => {
                 console.log(`Data: ${JSON.stringify(event, null, 2)}`);
             }
         };
+
+        res.status(200).json({
+            success: true
+        })
 
     } catch (error) {
         console.error("Error processing PayStack webhook:", error);
