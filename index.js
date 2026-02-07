@@ -10,10 +10,12 @@ const CondolenceRoute = require("./components/routers/CondolenceRoute");
 const DonationRoute = require("./components/routers/DonationRoute");
 const PaystackWebhookRoute = require("./components/routers/paystackWebhookRoute");
 const TransferRecipient = require("./components/routers/TransferRecipientRoute");
+const UpdateRecipientVerificationCode = require("./components/reminders/recipientVerifyUpdate");
 
 const PORT = process.env.PORT;
 dbConfig(); // database configuration
 
+UpdateRecipientVerificationCode();
 
 app.use(express.json({
     verify: (req, res, buf) => {

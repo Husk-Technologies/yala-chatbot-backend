@@ -18,43 +18,44 @@ exports.payStackWebhook = async (req, res) => {
       //Destructure event
       const { data } = event;
       const metadata = data?.metadata || {};
-      const { funeralUniqueCode, guestId } = metadata;
-
-      // check if there is no metadata
-      if (!funeralUniqueCode || !guestId) return res.sendStatus(200);
-
-      // Verify funeral details exist for the provided unique code
-      const funeralDetails = await FuneralDetails.findOne({
-        uniqueCode: funeralUniqueCode,
-      });
-      if (!funeralDetails) {
-        return res.sendStatus(200);
-      }
-
-      // Verify guest exists for the provided guest ID
-      const guest = await Guest.findById(guestId);
-      if (!guest) {
-        return res.sendStatus(200);
-      }
-
-      // check existing donation
-      const existingDonation = await Donation.findOne({
-        transactionReference: data.reference,
-      });
-      if (existingDonation) {
-        return res.sendStatus(200);
-      }
-
-      // check existing organizer with the funeral unique code
-      const existingOrganiser = await User.findOne({
-        funeralUniqueCode,
-      });
-      if (!existingOrganiser) {
-        return res.sendStatus(200);
-      }
-
+      
       // event donation check
       if (event.event === "charge.success") {
+        // destructure metadata
+          const { funeralUniqueCode, guestId } = metadata;
+          // check if there is no metadata
+          if (!funeralUniqueCode || !guestId) return res.sendStatus(200);
+    
+          // Verify funeral details exist for the provided unique code
+          const funeralDetails = await FuneralDetails.findOne({
+            uniqueCode: funeralUniqueCode,
+          });
+          if (!funeralDetails) {
+            return res.sendStatus(200);
+          }
+    
+          // Verify guest exists for the provided guest ID
+          const guest = await Guest.findById(guestId);
+          if (!guest) {
+            return res.sendStatus(200);
+          };
+    
+          // check existing donation
+          const existingDonation = await Donation.findOne({
+            transactionReference: data.reference,
+          });
+          if (existingDonation) {
+            return res.sendStatus(200);
+          };
+    
+          // check existing organizer with the funeral unique code
+          const existingOrganiser = await User.findOne({
+            funeralUniqueCode,
+          });
+          if (!existingOrganiser) {
+            return res.sendStatus(200);
+          };
+
         // record to database
         const donation = new Donation({
           funeralUniqueCode: funeralDetails.uniqueCode,
@@ -79,26 +80,54 @@ exports.payStackWebhook = async (req, res) => {
       // transfer cash to recipient check
       if(event.event.startsWith("transfer.")){
         // fetch recipient details
-        const transferRecipient = await TransferRecipient.findOne({ recipientCode: data.recipient.recipient_code })
-        if(event.event === "transfer.success"){
-            // update recipient cash transfer status 
-            const updateCashTransferStatus = await CashTransfer.findOne({
-              organiserId: transferRecipient.organiserId,
-            });
-            updateCashTransferStatus.transferStatus = "successful";
-            await updateCashTransferStatus.save();
+        const transferRecipient = await TransferRecipient.findOne({
+          recipientCode: data.recipient.recipient_code,
+        });
 
-            // subtract amount from recipient balance
-            const updateOrganiserBalance = await OrganiserDonationBalance.findOne({ 
-                organiserId: updateCashTransferStatus.organiserId 
-            });
-            updateOrganiserBalance.balance -= updateCashTransferStatus.amount;
-            await updateOrganiserBalance.save();
+        // check if successful
+        if (event.event === "transfer.success") {
+          // update recipient cash transfer status
+          const updateCashTransferStatus = await CashTransfer.findOne({
+            organiserId: transferRecipient.organiserId,
+          });
+          updateCashTransferStatus.transferStatus = "successful";
+          await updateCashTransferStatus.save();
 
-            console.log(
-              `Data: ${JSON.stringify(transferRecipient, null, 2)} - Cash status: ${JSON.stringify(updateCashTransferStatus.transferStatus)} - Balance: ${JSON.stringify(updateOrganiserBalance.balance)}`,
-            );
-        };
+          // subtract amount from recipient balance
+          const updateOrganiserBalance = await OrganiserDonationBalance.findOne(
+            {
+              organiserId: updateCashTransferStatus.organiserId,
+            },
+          );
+          updateOrganiserBalance.balance -= updateCashTransferStatus.amount;
+          await updateOrganiserBalance.save();
+        }
+
+        // check if failed
+        if (event.event === "transfer.failed") {
+          // update recipient cash transfer status
+          const updateCashTransferStatus = await CashTransfer.findOne({
+            organiserId: transferRecipient.organiserId,
+          });
+          updateCashTransferStatus.transferStatus = "failed";
+          await updateCashTransferStatus.save();
+        }
+
+        // check if reversed
+        if (event.event === "transfer.reversed") {
+          // update recipient cash transfer status
+          const updateCashTransferStatus = await CashTransfer.findOne({
+            organiserId: transferRecipient.organiserId,
+          });
+          updateCashTransferStatus.transferStatus = "reversed";
+          await updateCashTransferStatus.save();
+
+          console.log(
+            `Data: ${JSON.stringify(transferRecipient, null, 2)} - 
+                Cash status: ${JSON.stringify(updateCashTransferStatus.transferStatus)} - 
+                Balance: ${JSON.stringify(updateOrganiserBalance.balance)}`,
+          );
+        }
       }
 
       res.status(200).json({

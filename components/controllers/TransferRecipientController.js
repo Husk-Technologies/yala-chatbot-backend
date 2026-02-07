@@ -1,9 +1,13 @@
 const TransferRecipient = require("../models/TransferRecipientModel");
+const OrganiserDonationBalance = require("../models/organiserDonationBalanceModel");
 const CashTransfer = require("../models/CashTranferModel");
 const api = require("../axios/api");
 const { v4 } = require("uuid");
-const reference = v4();
 
+const generateReference = () => {
+    const reference = v4();
+    return reference; 
+}
 
 // Get mobile money list
 exports.getMobileMoneyList = async (req, res) => {
@@ -203,32 +207,37 @@ exports.verifyRecipientCode = async (req, res) => {
 };
 
 // Send money to recipient
-exports.TransferMoneyToRecipient = async (req, res) => {
+exports.transferMoneyToRecipient = async (req, res) => {
   try {
-    const { amount, accountNumber, organiserId } = req.body;
+    const { amount, organiserId } = req.body;
 
-    // const existingMechanicBalance = await mechanicSubscriptionBalance.findOne({
-    //   mechanicId: mechanicId,
-    // });
-    // if (amount <= 0) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Amount must be greater than zero",
-    //   });
-    // }
-
-    // if (existingMechanicBalance.balanceAmount < amount) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: `Insufficient balance: ${existingMechanicBalance.balanceAmount.toFixed(2)}`,
-    //   });
-    // }
-
-    // Verify recipient exists
-    const existingRecipient = await TransferRecipient.findOne({
-      accountNumber,
-      isVerified: true,
+    // check if organizer balance exist
+    const existingOrgainserBalance = await OrganiserDonationBalance.findOne({
+      organiserId,
     });
+
+    // amount shouldn't be zero or less
+    if (amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount must be greater than zero",
+      });
+    }
+
+    // amount shouldn't be more than balance
+    if (existingOrgainserBalance.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient balance: GHS ${existingOrgainserBalance.balance.toFixed(2)}`,
+      });
+    }
+
+    // Verify if recipient exists
+    const existingRecipient = await TransferRecipient.findOne({
+      organiserId,
+    });
+
+    // check if it doesn't exist
     if (!existingRecipient) {
       return res.status(400).json({
         success: true,
@@ -236,12 +245,20 @@ exports.TransferMoneyToRecipient = async (req, res) => {
       });
     }
 
+    // check if recipient is not verified
+    if (existingRecipient.isVerified === false) {
+      return res.status(400).json({
+        success: true,
+        message: "recipient not verified",
+      });
+    }
+
     const response = await api.post("transfer", {
       source: "balance",
       amount: amount * 100, // amount in pesewas from ghana cedi
-      reference: `acv_${reference}`,
+      reference: `acv_${generateReference()}`,
       recipient: existingRecipient.recipientCode,
-      reason: "Mechanic payment",
+      reason: "Recipient payment",
     });
 
     // Destructure response data
@@ -249,15 +266,15 @@ exports.TransferMoneyToRecipient = async (req, res) => {
 
     // Save transfer details to database
     const newTransfer = new CashTransfer({
-        userId: mechanicId,
-        name: existingRecipient.name,
-        accountNumber: existingRecipient.accountNumber,
-        bankCode: existingRecipient.bankCode,
-        amount: amount,
-        recipientCode: existingRecipient.recipientCode,
-        reference: data.reference,
-        transferCode: data.transfer_code,
-        transferStatus: "pending",
+      organiserId: organiserId,
+      accountNumber: existingRecipient.name,
+      accountNumber: existingRecipient.accountNumber,
+      bankCode: existingRecipient.bankCode,
+      amount: amount,
+      recipientCode: existingRecipient.recipientCode,
+      reference: data.reference,
+      transferCode: data.transfer_code,
+      transferStatus: "pending",
     });
     const savedTransfer = await newTransfer.save();
 
@@ -270,7 +287,7 @@ exports.TransferMoneyToRecipient = async (req, res) => {
     console.error("Error sending money:", error);
     res.status(500).json({
       success: false,
-      message: `Internal server error: ${error.message} - ${error.response?.data?.message}`,
+      message: `Internal server error: ${error.response?.data?.message || error.message}`,
     });
   }
 };

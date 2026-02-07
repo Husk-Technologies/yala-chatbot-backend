@@ -1,4 +1,4 @@
-const { getMobileMoneyList, getBankList, createTransferRecipient, getOrganiserRecipient, getAllRecipients, verifyRecipientCode } = require("../controllers/TransferRecipientController");
+const { getMobileMoneyList, getBankList, createTransferRecipient, getOrganiserRecipient, getAllRecipients, verifyRecipientCode, transferMoneyToRecipient } = require("../controllers/TransferRecipientController");
 const { verifyToken } = require("../middleware/Authenticate");
 const router = require("express").Router();
 
@@ -8,5 +8,6 @@ router.post("/create-transfer-recipient", verifyToken, createTransferRecipient);
 router.get("/fetch-recipients", verifyToken, getAllRecipients) // get all recipients
 router.get("/fetch-recipient/:organiserId", verifyToken, getOrganiserRecipient) // get the recipient
 router.put("/verify-recipient-codes/:id", verifyToken, verifyRecipientCode) // verify recipient codes
+router.post("/send-money", verifyToken, transferMoneyToRecipient) // 
 
 module.exports = router

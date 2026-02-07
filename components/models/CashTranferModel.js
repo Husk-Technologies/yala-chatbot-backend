@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const cashTransferSchema = new mongoose.Schema({
-  mechanicId: {
+  organiserId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  name: {
+  accountName: {
     type: String,
   },
   accountNumber: {
