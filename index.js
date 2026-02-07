@@ -9,6 +9,7 @@ const FuneralDetailsRoute = require("./components/routers/FuneralDetailsRoute");
 const CondolenceRoute = require("./components/routers/CondolenceRoute");
 const DonationRoute = require("./components/routers/DonationRoute");
 const PaystackWebhookRoute = require("./components/routers/paystackWebhookRoute");
+const TransferRecipient = require("./components/routers/TransferRecipientRoute");
 
 const PORT = process.env.PORT;
 dbConfig(); // database configuration
@@ -27,6 +28,7 @@ app.use("/api", FuneralDetailsRoute);
 app.use("/api", CondolenceRoute);
 app.use("/api", DonationRoute);
 app.use("/api", PaystackWebhookRoute);
+app.use("/api", TransferRecipient);
 
 app.get("/", (req, res) => {
     res.json({
