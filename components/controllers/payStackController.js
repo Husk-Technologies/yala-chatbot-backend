@@ -1,5 +1,7 @@
 const Donation = require("../models/DonationModel");
 const OrganiserDonationBalance = require("../models/organiserDonationBalanceModel");
+const CashTransfer = require("../models/CashTranferModel");
+const TransferRecipient = require("../models/TransferRecipientModel");
 const Guest = require("../models/GuestModel");
 const User = require("../models/UserModel")
 const FuneralDetails = require("../models/FuneralDetailsModel");
@@ -8,17 +10,14 @@ const secret = process.env.PAYSTACK_SECRET_KEY;
 
 exports.payStackWebhook = async (req, res) => {
     try {
-      const hash = crypto
-        .createHmac("sha512", secret)
-        .update(req.rawBody)
-        .digest("hex");
+      const hash = crypto.createHmac("sha512", secret).update(req.rawBody).digest("hex");
       if (hash !== req.headers["x-paystack-signature"])
         return res.status(400).send("Invalid signature");
 
       const event = req.body;
       //Destructure event
       const { data } = event;
-      const { metadata } = data;
+      const metadata = data?.metadata || {};
       const { funeralUniqueCode, guestId } = metadata;
 
       // check if there is no metadata
@@ -46,7 +45,7 @@ exports.payStackWebhook = async (req, res) => {
         return res.sendStatus(200);
       }
 
-      // check existing organizer with the funeral unique
+      // check existing organizer with the funeral unique code
       const existingOrganiser = await User.findOne({
         funeralUniqueCode,
       });
@@ -54,7 +53,9 @@ exports.payStackWebhook = async (req, res) => {
         return res.sendStatus(200);
       }
 
+      // event donation check
       if (event.event === "charge.success") {
+        // record to database
         const donation = new Donation({
           funeralUniqueCode: funeralDetails.uniqueCode,
           guestId: guest._id,
@@ -65,15 +66,39 @@ exports.payStackWebhook = async (req, res) => {
         });
         await donation.save();
 
-        const organiserBalance = await OrganiserDonationBalance.findOneAndUpdate({
-            organiserId: existingOrganiser
+        // add amount to organizer's balance
+        await OrganiserDonationBalance.findOneAndUpdate({
+            organiserId: existingOrganiser._id
         }, {
             $inc: { balance: donation.donationAmount} 
         }, {
             new: true
         });
+      }
 
-        console.log(`Data: ${JSON.stringify(organiserBalance, null, 2)}`);
+      // transfer cash to recipient check
+      if(event.event.startsWith("transfer.")){
+        // fetch recipient details
+        const transferRecipient = await TransferRecipient.findOne({ recipientCode: data.recipient.recipient_code })
+        if(event.event === "transfer.success"){
+            // update recipient cash transfer status 
+            const updateCashTransferStatus = await CashTransfer.findOne({
+              organiserId: transferRecipient.organiserId,
+            });
+            updateCashTransferStatus.transferStatus = "successful";
+            await updateCashTransferStatus.save();
+
+            // subtract amount from recipient balance
+            const updateOrganiserBalance = await OrganiserDonationBalance.findOne({ 
+                organiserId: updateCashTransferStatus.organiserId 
+            });
+            updateOrganiserBalance.balance -= updateCashTransferStatus.amount;
+            await updateOrganiserBalance.save();
+
+            console.log(
+              `Data: ${JSON.stringify(transferRecipient, null, 2)} - Cash status: ${JSON.stringify(updateCashTransferStatus.transferStatus)} - Balance: ${JSON.stringify(updateOrganiserBalance.balance)}`,
+            );
+        };
       }
 
       res.status(200).json({
@@ -84,7 +109,7 @@ exports.payStackWebhook = async (req, res) => {
         console.error("Error processing PayStack webhook:", error);
         res.status(500).json({ 
             success: false,
-            message: `Error processing webhook : ${error.message}`
+            message: `Error processing webhook : ${error.response?.data?.message || error.message}`
         });
     }
 }
