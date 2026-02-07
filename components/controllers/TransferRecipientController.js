@@ -94,7 +94,7 @@ exports.createTransferRecipient = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: true,
-      message: `Internal server error: ${error.response.message.data}`,
+      message: `Internal server error: ${error.response.data.message}`,
     });
   }
 };
