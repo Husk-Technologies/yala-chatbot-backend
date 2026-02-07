@@ -114,13 +114,38 @@ exports.createTransferRecipient = async (req, res) => {
 exports.getOrganiserRecipient = async (req, res) => {
     try {
         const { organiserId } = req.params;
-
-        const transferRecipient = await TransferRecipient.findOne({ organiserId });
+        
+        const transferRecipient = await TransferRecipient.findOne({ organiserId }).populate("organiserId", "firstName lastName");
+        if(!transferRecipient) {
+            return res.status(200).json({
+                success: false,
+                message: "Recipient not found",
+            });
+        };
         
         res.status(200).json({
             success: true,
             message: "recipient retrieved",
             recipient: transferRecipient
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: `Internal server error: ${error.message}`
+        })
+    }
+};
+
+// get the recipient details by organizer id
+exports.getAllRecipients = async (req, res) => {
+    try {
+        const transferRecipient = await TransferRecipient.find().populate("organiserId", "firstName lastName");
+        
+        res.status(200).json({
+            success: true,
+            message: "recipients retrieved",
+            recipients: transferRecipient
         })
         
     } catch (error) {
@@ -128,6 +153,48 @@ exports.getOrganiserRecipient = async (req, res) => {
             success: false,
             message: `Internal server error: ${error.message}`
         })
+    }
+};
+
+exports.verifyRecipientCode = async (req, res) => {
+    try {
+        const { verifyCodes } = req.body;
+        
+        if(!verifyCodes) {
+            return res.status(200).json({
+                success: false,
+                message: "Verify code field os required"
+            });
+        };
+
+        //123, 232, 343
+        // break codes into array
+        const codes = verifyCodes.split(",").map(item => item.trim());
+        const verifiedCodes = await TransferRecipient.findOneAndUpdate(
+            { verifiedCodes: codes },
+            { isVerified: true},
+            { new: true }
+        );
+        if(!verifiedCodes) {
+            return res.status(404).json({
+                success: false,
+                message: "recipient not verified, check codes and try again"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "recipient verified",
+            recipient: {
+                accountName: verifiedCodes.accountName,
+                status: verifiedCodes.isVerified
+            },
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+          success: false,
+          message: `Internal server error: ${error.message}`,
+        });
     }
 };
 
