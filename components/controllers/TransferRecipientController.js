@@ -55,6 +55,12 @@ exports.getBankList = async (req, res) => {
 exports.createTransferRecipient = async (req, res) => {
     try {
     const { name, accountNumber, bankCode, organiserId, verifiedCodes } = req.body;
+    if (!name || !accountNumber || !bankCode || !organiserId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
     const response = await api.post("transferrecipient", {
       type: "mobile_money", // mobile money for now
       name: name,
@@ -63,23 +69,28 @@ exports.createTransferRecipient = async (req, res) => {
       currency: "GHS",
     });
 
-    // Destructure response data
-    const { message, data } = response.data;
-
+    
     // Check if recipient already exists
     const existingRecipient = await TransferRecipient.findOne({
-      recipientCode: data.recipient_code,
+        recipientCode: data.recipient_code,
     });
     if (existingRecipient)
-      return res.status(400).json({ success: true, message: "recipient already exist" });
+        return res.status(400).json({ 
+            success: false, 
+            message: "recipient already exist" 
+        });
 
+    // Destructure response data
+    const { message, data } = response.data;
+    
     // Save recipient to database
     const newRecipient = new TransferRecipient({
       organiserId,
-      transactionType: data.type,
+      transferType: data.type,
       recipientCode: data.recipient_code,
-      name: data.name,
+      accountName: data.name,
       accountNumber: data.details.account_number,
+      bankName: data.details.bank_name,
       bankCode: data.details.bank_code,
       verifiedCodes: verifiedCodes.split(",").map((codes) => codes.trim()),
       isVerified: false,
@@ -91,10 +102,11 @@ exports.createTransferRecipient = async (req, res) => {
       message: message,
       recipient: savedRecipient,
     });
+
   } catch (error) {
     res.status(500).json({
       success: true,
-      message: `Internal server error: ${error.response.data.message}`,
+      message: `Internal server error: ${error.response?.data?.message || error.message}`,
     });
   }
 };

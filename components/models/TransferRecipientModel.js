@@ -13,15 +13,19 @@ const transferRecipientSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    name: {
+    accountName: {
         type: String,
         required: true
     },
     accountNumber: {
         type: String,
         required: true,
-    },  
-    bonkCode: {
+    },
+    bankName: {
+        type: String,
+        required: true
+    },
+    bankCode: {
         type: String,
         required: true
     },
