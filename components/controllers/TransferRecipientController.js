@@ -69,20 +69,19 @@ exports.createTransferRecipient = async (req, res) => {
       currency: "GHS",
     });
 
+    // Destructure response data
+    const { message, data } = response.data;
     
     // Check if recipient already exists
     const existingRecipient = await TransferRecipient.findOne({
-        recipientCode: data.recipient_code,
+      recipientCode: data.recipient_code,
     });
     if (existingRecipient)
-        return res.status(400).json({ 
+      return res.status(400).json({ 
             success: false, 
             message: "recipient already exist" 
         });
 
-    // Destructure response data
-    const { message, data } = response.data;
-    
     // Save recipient to database
     const newRecipient = new TransferRecipient({
       organiserId,
