@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/UserModel");
+const OrganiserDonationBalance = require("../models/organiserDonationBalanceModel");
 const Identity = require("../models/IdentityModel");
 const { generateToken } = require("../middleware/Authenticate");
 
@@ -132,10 +133,17 @@ exports.registerOrganiser = async (req, res) => {
     });
     const savedUser = await user.save();
 
+    //create account balance
+    const donationBalance = new OrganiserDonationBalance({
+      organiserId: user._id
+    })
+    await donationBalance.save();
+
     res.status(201).json({
       success: true,
-      message: "Organiser created successfully",
+      message: "Organizer created successfully",
       role: savedUser.role,
+      balance: donationBalance,
     });
   } catch (error) {
     res.status(500).json({

@@ -8,6 +8,13 @@ exports.makeDonation = async (req, res) => {
     try {
         const { funeralUniqueCode, guestId, donationAmount } = req.body;
 
+        if(!funeralUniqueCode || !guestId || !donationAmount){
+            return res.status(404).json({
+                success: false,
+                message: "All fields are required"
+            });
+        };
+
         // Verify guest exists
         const guest = await Guest.findById(guestId);
         if (!guest) {

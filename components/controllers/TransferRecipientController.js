@@ -184,6 +184,7 @@ exports.verifyRecipientCode = async (req, res) => {
                 message: "recipient not verified, check codes and try again"
             });
         };
+        
         res.status(200).json({
             success: true,
             message: "recipient verified",
