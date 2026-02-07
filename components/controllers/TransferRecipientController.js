@@ -158,20 +158,23 @@ exports.getAllRecipients = async (req, res) => {
 
 exports.verifyRecipientCode = async (req, res) => {
     try {
+        const { id } = req.params;
         const { verifyCodes } = req.body;
         
         if(!verifyCodes) {
-            return res.status(200).json({
+            return res.status(404).json({
                 success: false,
-                message: "Verify code field os required"
+                message: "Verify code field is required"
             });
         };
 
-        //123, 232, 343
         // break codes into array
         const codes = verifyCodes.split(",").map(item => item.trim());
         const verifiedCodes = await TransferRecipient.findOneAndUpdate(
-            { verifiedCodes: codes },
+            { 
+                _id: id,
+                verifiedCodes: { $all: codes}, 
+            },
             { isVerified: true},
             { new: true }
         );

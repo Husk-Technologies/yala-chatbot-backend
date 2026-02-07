@@ -7,6 +7,6 @@ router.get("/fetch-banks", verifyToken, getBankList); // fetch the list of banks
 router.post("/create-transfer-recipient", verifyToken, createTransferRecipient); // create recipient
 router.get("/fetch-recipients", verifyToken, getAllRecipients) // get all recipients
 router.get("/fetch-recipient/:organiserId", verifyToken, getOrganiserRecipient) // get the recipient
-router.post("/verify-recipient-codes", verifyToken, verifyRecipientCode) // verify recipient codes
+router.put("/verify-recipient-codes/:id", verifyToken, verifyRecipientCode) // verify recipient codes
 
 module.exports = router
