@@ -86,23 +86,11 @@ exports.payStackWebhook = async (req, res) => {
       // check if successful
       if (event.event === "transfer.success") {
           // update recipient cash transfer status
-        //   const updateCashTransferStatus = await CashTransfer.findOneAndUpdate(
-        //     {
-        //       transferCode: data.transfer_code,
-        //     },
-        //     {
-        //       transferStatus: "successful",
-        //     },
-        //     {
-        //       new: true,
-        //     },
-        //   );
           const updateCashTransferStatus = await CashTransfer.findOne({
             transferCode: data.transfer_code,
           });
             updateCashTransferStatus.transferStatus = "successful";
             await updateCashTransferStatus.save();
-            console.log(`Data: ${JSON.stringify(updateCashTransferStatus, null, 2)}`);
 
         // subtract amount from recipient balance
         const updateOrganiserBalance = await OrganiserDonationBalance.findOne({
