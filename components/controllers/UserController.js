@@ -65,7 +65,7 @@ exports.registerAdmin = async (req, res) => {
 
     // Check if user exists
     const existingUser = await User.findOne({
-      $or: [{ email }, { phoneNumber }],
+      $or: [ {identity},{ email }, { phoneNumber }],
     });
     if (existingUser)
       return res
