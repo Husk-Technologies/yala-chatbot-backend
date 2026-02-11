@@ -1,7 +1,6 @@
 const Donation = require("../models/DonationModel");
 const OrganiserDonationBalance = require("../models/organiserDonationBalanceModel");
 const CashTransfer = require("../models/CashTranferModel");
-const TransferRecipient = require("../models/TransferRecipientModel");
 const Guest = require("../models/GuestModel");
 const User = require("../models/UserModel");
 const FuneralDetails = require("../models/FuneralDetailsModel");

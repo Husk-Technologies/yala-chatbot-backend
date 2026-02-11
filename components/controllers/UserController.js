@@ -70,7 +70,7 @@ exports.registerAdmin = async (req, res) => {
     if (existingUser)
       return res
         .status(400)
-        .json({ message: "Email or phone number already in use." });
+        .json({ message: "ID or email or phone number already in use." });
 
     // hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
