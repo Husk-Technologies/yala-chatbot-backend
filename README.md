@@ -17,7 +17,7 @@ Before setting up the project, ensure you have the following installed:
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/your-repo/whatsapp-chatbot-backend.git
+   git clone https://github.com/Husk-Technologies/yala-chatbot-backend.git
    cd whatsapp-chatbot-backend
    ```
 
