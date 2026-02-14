@@ -128,12 +128,13 @@ exports.deleteFuneralDetails = async (req, res) => {
   }
 };
 
-// get funeral details 
+// get funeral details (admin)
 exports.getAllFuneralDetails = async (req, res) => {
     try {
         const funeralDetails = await FuneralDetails.find().sort({ createdAt: -1 }).populate("userId", " firstName lastName");
         res.status(200).json({
             success: true,
+            message: "funeral details fetched",
             funeralDetails
         });
     } catch (error) {

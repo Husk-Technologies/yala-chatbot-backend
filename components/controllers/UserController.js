@@ -220,7 +220,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Credential invalid, please try again." });
 
     const token = await generateToken(user); // generate token
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Logged in successfully",
       user: user,
