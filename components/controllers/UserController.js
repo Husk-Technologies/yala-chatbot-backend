@@ -165,7 +165,7 @@ exports.addFuneralCode = async (req, res) => {
                 success: false,
                 message: "Filed is required."
             })
-        }
+        };
 
         // check if user exist
         const user = await User.findById(id);
@@ -299,7 +299,7 @@ exports.getUserData = async (req, res) => {
     }
 };
 
-// Gett all identity 
+// Get all identity 
 exports.getAllIdentity = async (req, res) => {
     try {
       const identity = await Identity.find();
