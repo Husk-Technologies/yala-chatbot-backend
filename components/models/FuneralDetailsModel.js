@@ -7,6 +7,10 @@ const FuneralDetailsSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    organiser: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
     uniqueCode: {
       type: String,
       required: true,

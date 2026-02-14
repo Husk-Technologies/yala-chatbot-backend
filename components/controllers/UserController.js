@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/UserModel");
+const FuneralDetails = require("../models/FuneralDetailsModel");
 const OrganiserDonationBalance = require("../models/organiserDonationBalanceModel");
 const Identity = require("../models/IdentityModel");
 const { generateToken } = require("../middleware/Authenticate");
@@ -111,7 +112,6 @@ exports.registerOrganiser = async (req, res) => {
       });
     }
 
-
     // Check if user exists
     const existingUser = await User.findOne({
       $or: [{ email }, { phoneNumber }],
@@ -120,6 +120,7 @@ exports.registerOrganiser = async (req, res) => {
       return res
         .status(400)
         .json({ message: "Email or phone number already in use." });
+
 
     // hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -165,6 +166,8 @@ exports.addFuneralCode = async (req, res) => {
                 message: "Filed is required."
             })
         }
+
+        // check if user exist
         const user = await User.findById(id);
         if(!user){
             return res.status(404).json({
@@ -173,21 +176,39 @@ exports.addFuneralCode = async (req, res) => {
             })
         }
 
+        // check if event exist
+        const existingFuneral = await FuneralDetails.findOne({ uniqueCode: funeralUniqueCode });
+        if(!existingFuneral){
+          return res.status(404).json({
+            success: false,
+            message: "Event code doesn't exist."
+          });
+        };
+        
+        // check if code already exist
         if(user.funeralUniqueCode.includes(funeralUniqueCode)){
             return res.status(404).json({
               success: false,
-              message: "Code already added.",
+              message: "Event code already added.",
             });
-        }
+        };
 
-        const updateFuneralCode = await User.findByIdAndUpdate(id, {
+        // add organiser to event
+        existingFuneral.organiser = user._id;
+        await existingFuneral.save();
+
+        // add code to organiser details
+        const updateFuneralCode = await User.findByIdAndUpdate(id, 
+        {
           $push: { funeralUniqueCode },
         }, 
-        { new: true });
+        { new: true }
+      );
 
         res.status(200).json({
           success: true,
           message: "Added successfully",
+          organiser: existingFuneral.organiser,
           funeralUniqueCode: updateFuneralCode.funeralUniqueCode
         });
         
