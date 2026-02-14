@@ -55,26 +55,34 @@ exports.uploadFuneralDetails = async (req, res) => {
 exports.updateFuneralDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, description, uniqueCode, location, condolence, donation, date } =
-      req.body;
-    const brochureFile = req.file; // Access the uploaded file
-    if (!brochureFile) {
-      return res.status(400).json({ message: "Brochure file is required." });
-    }
-
+    const { userId, description, uniqueCode, location, condolence, donation, date } = req.body;
+    
+    // check existing funeral
     const existingFuneral = await FuneralDetails.findById(id);
     if (!existingFuneral) {
       return res.status(400).json({
         message: "Funeral details not found.",
       });
     }
-
-    // Upload brochure to Cloudinary
-    const uploadResult = await cloudinary.uploader.upload(brochureFile.path, {
-      folder: "yala_funeral_files",
-      resource_type: "auto",
-    });
-
+    
+    // Access the uploaded file
+    const brochureFile = req.file;
+    
+    let brochurePath
+    // check if brochure exist in path
+    if(brochureFile){
+      // Upload brochure to Cloudinary
+      const uploadResult = await cloudinary.uploader.upload(brochureFile.path, {
+        folder: "yala_funeral_files",
+        resource_type: "auto",
+      });
+      brochurePath = uploadResult.secure_url;
+    }
+    else{
+      brochurePath = existingFuneral.brochure;
+    };
+    
+    console.log(brochurePath);
     // Create new funeral details document
     const updateFuneralDetails = await FuneralDetails.findByIdAndUpdate(
       id,
@@ -82,7 +90,7 @@ exports.updateFuneralDetails = async (req, res) => {
         userId,
         description,
         uniqueCode,
-        brochure: uploadResult.secure_url,
+        brochure: brochurePath,
         location,
         condolence,
         donation,
