@@ -261,6 +261,13 @@ exports.getFuneralBrochure = async (req, res) => {
         message: "Funeral details not found",
       });
     }
+
+    if (funeralDetails.brochure === "") {
+      return res.status(404).json({
+        success: false,
+        message: "Does not have brochure",
+      });
+    }
     // Increment brochure download count
     funeralDetails.brochureDownloadCount += 1;
     await funeralDetails.save();
